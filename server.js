@@ -1,44 +1,87 @@
-/////////////DEPENDENCIES/////////////////////////////////////////////
+/////////////DEPENDENCIES////////////////////////////////////
 const express = require('express');
 const mongoose = require('mongoose');
 const logger = require('morgan');
 const cors = require('cors');
 
-/////////////////INITUALIZE//////////////////////////////////////////////
+/////////////////INITUALIZE//////////////////////////////////
 const app = express();
+const Schema = mongoose.Schema;
 
-///////////////////CONFIG//////////////////////////////////////////////////
+///////////////////CONFIG////////////////////////////////////
 require('dotenv').config();
-const { PORT = 4000, DATABASE_URL } = process.env;
+const { PORT = 4003, DATABASE_URL } = process.env;
 
-//////////////CONNECT MONGODB/////////////////////////////////////////
+//////////////CONNECT MONGODB////////////////////////////////
 mongoose.connect(DATABASE_URL);
 mongoose.connection
 .on('connected', () => console.log('MONGODB  IS CONNECTED'))
 
-///////////SCHEMA MODELS//////////////////////////////////////////////////
-//BLOG//////////////////////////////////////////////////////////
+
+/////////// BARBER SHOP SCHEMA MODELS ////////////////////////
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+//SCHEMA MODEL
+const peopleSchema = new mongoose.Schema({
+    name: String,
+    title: String,
+    createdAt: String,
+}, {timestamps: true}); //APROX
+    //Model
+    const People = mongoose.model('People', peopleSchema); 
+
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+
+
+/////////// SAMP SCHEMA MODELS///////////////////////////////
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+
+//MODELS
+const workoutSchema = new mongoose.Schema({ 
+    name: String,
+    date: String,
+    time: String,
+    description: String,
+    }, { timestamps: true });
+    
+    const Workout = mongoose.model( 'Workout', workoutSchema); 
+
+
+//////////////////////////////////////////////////////////////
+///////////// DIGITAL INVESTORS HUB //////////////////////////
+//////////////////////////////////////////////////////////////
+//REVIEWS/////////////////////////////////////////////////////
+const reviewsSchema = new mongoose.Schema({
+    message: { type: String },
+    rating: {type: Number, min: 1, max: 5, default: 5}
+}, { timestamps: true });
+const Reviews = mongoose.model('Reviews', reviewsSchema);
+
+//COMMENT
+const commentSchema = new Schema({
+    message: { type: String }
+    
+}, { timestamps: true });
+
+//BLOG////
 const blogSchema = new mongoose.Schema({
     title: String,
     image: String,
     content: String,
-    reviews: [reviewsSchema],
+    comment: [commentSchema],
     counter: { type: Number, default: 0 },
 }, { timestamps: true });
 const Blog = mongoose.model('Blog', blogSchema);
 
-//PEOPLE////////////////////////////////////////////////////////
-const peopleSchema = new mongoose.Schema({
-    name: { type: String },
-    image: { type: String,
-        default: 'https://i.imgur.com/7jET8VB.png'
-    },
-    business: { type: String },
-    createdAt: { type: String}, 
-}, { timestamps: true });
-const People = mongoose.model('People', peopleSchema);
-
-//PLUS//////////////////////////////////////////////////////////
+//PLUS////
 const plusSchema = new mongoose.Schema({
     name: { type: String },
     image: { type: String },
@@ -47,38 +90,54 @@ const plusSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Plus = mongoose.model('Plus', plusSchema);
 
-//REVIEWS//////////////////////////////////////////////////////
-const reviewsSchema = new mongoose.Schema({
-    message: { type: String },
-    rating: {type: Number, min: 1, max: 5, default: 5}
+////////////////////////USER////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
+const userSchema = new mongoose.Schema({
+    username: { type: String },
+    password: { type: String },
+    image: { type: String },
+bio: String,
+posts: {type:Schema.Types.ObjectId, ref: 'Post'}
 }, { timestamps: true });
-const Reviews = mongoose.model('Reviews', reviewsSchema);
+module.exports = mongoose .model('User', userSchema)
 
-//WEBSITE///////////////////////////////////////////////////////
+//ESSENTIALP////
+const essentialPSchema = new mongoose.Schema({
+    name: { type: String },
+    image: { type: String },
+    time: { type: String },
+    date: { type: String },
+}, { timestamps: true });
+const EssentialP = mongoose.model('EssentialP', essentialPSchema);
+
+//WEBSITE/
 const websiteSchema = new mongoose.Schema({
     title: String,
     image: String,
     content: String,
-    reviews: [reviewsSchema],
+    comment: [commentSchema],
+    reply: [replySchema],
     counter: { type: Number, default: 0 },
 }, { timestamps: true });
 const Website = mongoose.model('Website', websiteSchema);
 
-//FEED///////////////////////////////////////////////////////////
+//FEED/////
 const feedSchema = new mongoose.Schema({
     title: String,
     image: String,
     content: String,
-    reviews: [reviewsSchema],
+    comment: [commentSchema],
+    reply: [replySchema],
     counter: { type: Number, default: 0 },
 }, { timestamps: true });
 const Feed = mongoose.model('Feed', feedSchema);
 
-//ALL//////////////////////////////////////////////////////////////
-const allSchema = new Schema({
+//All////////
+const allSchema = new mongoose.Schema({
     createPost: { type: String },
 }, { timestamps: true });
-const All = mongoose.model('All', allSchema);
+module.exports = mongoose.model('All', allSchema);
 
 
 /////////////MIDDLEWARE//////////////////////////////////////////////
@@ -88,102 +147,19 @@ app.use(logger('dev'));
 
 
 
-////////////////ROUTES//////////////////////////////////////////////////
+////////////////ROUTES
 app.get('/', (req, res) => {
     res.send('WELCOME TO THE DIGITAL INVESTORS HUB');
 });
-//////////////////////////////////////////////
-///////////////FEED/////////////////////////////////////////////////////
-//////////////////////////////////////////////
-app.get('/api/feed', async(req, res) => {
-    try {
-        res.status(200).json(await Feed.find({}));
-    } catch (error) {
-        res.status(400).json({'404 Message': 'Bad Request'});
-        
-    }
-});
-//CREATE//
-app.post('/api/feed', async(req, res) => {
-    try {
-        res.status(201).json(await Feed.create(req.body));
-    } catch (error) {
-        res.status(400).json({'404 Message': 'Bad Request'});
-    }
-});
 
-//UPDATE//
-app.put('/api/feed/:id', async(req, res) => {
-    try {
-        res.status(200).json(await Feed.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
-            ));
-        } catch (error) {
-            res.status(400).json({'404 Message': 'Bad Request'});
-    }
-});
 
-//DELETE//
-app.delete('/api/delete/:id', async(req, res) => {
-    try {
-        res.status(200).json(await Feed.findByIdAndDelete(
-            req.params.id));
-    } catch (error) {
-        res.status(400).json({ 'error': 'Bad Request' });
-    }
-});
-//////////////////////////////////////////////
-///////////////ALL/////////////////////////////////////////////////////
-//////////////////////////////////////////////
-//INDEX
-app.get('/api/all', isAuthenticated, async (req, res) => {
-    try {
-        res.status(200).json(await People.find({ createdByUserId: req.user.uid}));
-    } catch (error) {
-        res.status(400).json({'error': 'bad request'});
+//////////////////////////////////////////////////////////////
+///////////// BARBER SHOP ///////////////////////////////////
+//////////////////////////////////////////////////////////////
 
-    }
-});
-
-//CREATE
-app.post('/api/people', isAuthenticated, async (req,res) => {
-try {
-    req.body.createdByUserId = req.user.uid
-    res.status(201).json(await People.create(req.body))
-} catch (error) {
-    res.status(400).json({'error': '404 message: bad request'});
-}
-});
-
-//UPDATE
-app.put('/api/people/:id', async ( req, res) => {
-try{
-    res.status(200).json(await People.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        {new: true}
-    ));
-} catch (error) {
-res.status(400).json({'error': '404 message: bad request'});
-}
-});
-
-//DELETE
-app.delete('api/people/:id', async (req, res) => {
-    try{
-        res.status(200).json(await People.findByIdAndDelete(
-            req.params.id
-    ));
- } catch (error) {
-        res.status(400).json({'error': '404 message: bad request'});
-    }
-});
-
-//////////////////////////////////////////////
-///////////////PEOPLE/////////////////////////////////////////////////////
-//////////////////////////////////////////////
+/////////////////////
+///////////////PEOPLE
+/////////////////////
 app.get('/api/people', async(req, res) => {
     try {
         res.status(200).json(await People.find({}));
@@ -223,10 +199,168 @@ app.delete('/api/delete/:id', async(req, res) => {
         res.status(400).json({ 'error': 'Bad Request' });
     }
 });
-//////////////////////////////////////////////
-///////////////WEBSITE//////////////////////////////////////////////////
-//////////////////////////////////////////////
-app.get('/api/website', async(req, res) => {
+
+
+//////////////////////////////////////////////////////////////
+///////////// SAMP FITNESS ///////////////////////////////////
+//////////////////////////////////////////////////////////////
+////////////////INDEX
+//WORKOUT
+app.get('/api/workout', async (req, res) => {
+    try {
+        res.status(200).json(await Workout.find({})); 
+    } catch (error) {
+        res.status(400).json({'error': 'bad request'});
+    }
+});
+
+///////CREATE
+//CREATE WORKOUT
+app.post('/api/workout', async (req, res) => {
+    try {
+        res.status(201).json(await Workout.create(req.body));
+    } catch (error) {
+        res.status(400).json({'error': 'Bad Request'});
+    }
+});
+
+//WORKOUT UPDATE
+app.put('/api/workout/:id', async(res, req) => {
+    try {
+        res.status(200).json(await Workout.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        ))
+    } catch (error) {
+        res.status(400)({'error': 'Bad Request'});
+    }
+});
+
+
+//WORKOUT DELETE
+app.delete('/api/workout/delete/:id', async(req, res) =>{
+    try {
+        res.status(200).json(await Workout.findByIdAndDelete(
+            req.params.id
+            ));
+        } catch (error) {
+        res.status(400).json({'error': 'Bad Request'});
+    }
+});
+
+
+
+//////////////////////////////////////////////////////////////
+///////////// USER ///////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+///////////////////
+///////////////INDEX
+///////////////////
+app.get('/api/user', async (req, res) => {
+    try {
+      res.status(200).json(await User.find({}));
+    } catch (error) {
+      console.log(error);
+      res.status(400).json({
+        error: 'bad request',
+      });
+    }
+  });
+/////////////////////
+///////////////CREATE
+/////////////////////
+app.post('/api/user', async (req, res) => {
+    try {
+      res.status(201).json(await User.create(req.body));
+    } catch (error) {
+      console.log(error);
+      res.status(400).json({ error: 'bad request' });
+    }
+  });
+/////////////////////
+///////////////UPDATE
+/////////////////////
+app.put('/api/user/:id', async (req, res) => {
+    try {
+      res.status(200).json(
+        await Post.findByIdAndUpdate(req.params.id, req.body, {
+          new: true,
+        })
+      );
+    } catch (error) {
+      console.log(error);
+      res.status(400).json({
+        error: 'bad request',
+      });
+    }
+  });  
+/////////////////////
+///////////////DELETE
+/////////////////////
+app.delete('/api/user/delete/:id', async (req, res) => {
+    try {
+      res.status(200).json(await User.findByIdAndDelete(req.params.id));
+    } catch (error) {
+      console.log(error);
+      res.status(400).json({ error: 'bad request' });
+    }
+  });
+  
+
+
+
+//////////////////////////////////////////////////////////////
+///////////// DIGITAL INVESTORS HUB //////////////////////////
+//////////////////////////////////////////////////////////////
+///////////////////
+///////////////FEED
+///////////////////
+app.get('/api/feed', async(req, res) => {
+    try {
+        res.status(200).json(await Feed.find({}));
+    } catch (error) {
+        res.status(400).json({'404 Message': 'Bad Request'});
+        
+    }
+});
+//CREATE//
+app.post('/api/feed', async(req, res) => {
+    try {
+        res.status(201).json(await Feed.create(req.body));
+    } catch (error) {
+        res.status(400).json({'404 Message': 'Bad Request'});
+    }
+});
+
+//UPDATE//
+app.put('/api/feed/:id', async(req, res) => {
+    try {
+        res.status(200).json(await Feed.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+            ));
+        } catch (error) {
+            res.status(400).json({'404 Message': 'Bad Request'});
+    }
+});
+
+//DELETE//
+app.delete('/api/delete/:id', async(req, res) => {
+    try {
+        res.status(200).json(await Feed.findByIdAndDelete(
+            req.params.id));
+    } catch (error) {
+        res.status(400).json({ 'error': 'Bad Request' });
+    }
+});
+
+
+//////////////////////
+///////////////WEBSITE
+//////////////////////
+app.get('/api/websites', async(req, res) => {
     try {
         res.status(200).json(await Website.find({}));
     } catch (error) {
@@ -234,7 +368,7 @@ app.get('/api/website', async(req, res) => {
     }
 });
 //CREATE//
-app.post('/api/website', async(req, res) => {
+app.post('/api/websites', async(req, res) => {
     try {
         res.status(201).json(await Website.create(req.body));
     } catch (error) {
@@ -242,7 +376,7 @@ app.post('/api/website', async(req, res) => {
     }
 });
 //UPDATE//
-app.put('/api/website/:id', async(req, res) => {
+app.put('/api/websites/:id', async(req, res) => {
     try {
         res.status(200).json(await Website.findByIdAndUpdate(
             req.params.id,
@@ -263,9 +397,9 @@ app.put('/api/website/:id', async(req, res) => {
             res.status(400).json({ 'error': 'Bad Request' });
         }
     });
-//////////////////////////////////////////////
-/////////////PLUS//////////////////////////////////////////////////
-//////////////////////////////////////////////
+/////////////////
+/////////////PLUS
+/////////////////
     app.get('/api/plus', async(req, res) => {
         try {
             res.status(200).json(await Plus.find({}));
@@ -304,10 +438,10 @@ app.delete('/api/delete/:id', async(req, res) => {
         res.status(400).json({ 'error': 'Bad Request' });
     }
 });
-//////////////////////////////////////////////
-/////////////BLOG////////////////////////////////////////////////////
-//////////////////////////////////////////////
-app.get('/api/blog', async(req, res) => {
+/////////////////
+/////////////BLOG
+/////////////////
+app.get('/api/blogs', async(req, res) => {
     try {
         res.status(200).json(await Blog.find({}));
     } catch (error) {
@@ -315,7 +449,7 @@ app.get('/api/blog', async(req, res) => {
     }
 });
 //CREATE//
-app.post('/api/blog', async(req, res) => {
+app.post('/api/blogs', async(req, res) => {
     try {
         res.status(201).json(await Blog.create(req.body));
     } catch (error) {
@@ -324,7 +458,7 @@ app.post('/api/blog', async(req, res) => {
 });
 
 //UPDATE//
-app.put('/api/blog/:id', async(req, res) => {
+app.put('/api/blogs/:id', async(req, res) => {
     try {
         res.status(200).json(await Blog.findByIdAndUpdate(
             req.params.id,
@@ -346,9 +480,51 @@ app.put('/api/blog/:id', async(req, res) => {
         }
     });
     
-//////////////////////////////////////////////
-///////////REVIEWS////////////////////////////////////////////////////
-//////////////////////////////////////////////
+///////////////////////
+/////////////ESSENTIALP
+///////////////////////
+app.get('/api/essentials', async(req, res) => {
+    try {
+        res.status(200).json(await EssentialP.find({}));
+    } catch (error) {
+        res.status(400).json({'error': 'Bad Request'});
+    }
+});
+//CREATE//
+app.post('/api/essentials', async(req, res) => {
+    try {
+        res.status(201).json(await EssentialP.create(req.body));
+    } catch (error) {
+        res.status(400).json({'404 Message': 'Bad Request'});
+    }
+});
+
+//UPDATE//
+app.put('/api/essentials/:id', async(req, res) => {
+    try {
+        res.status(200).json(await EssentialP.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+            ));
+        } catch (error) {
+            res.status(400).json({'404 Message': 'Bad Request'});
+        }
+    });
+    
+    //DELETE//
+    app.delete('/api/delete/:id', async(req, res) => {
+        try {
+            res.status(200).json(await EssentialP.findByIdAndDelete(
+                req.params.id));
+            } catch (error) {
+            res.status(400).json({ 'error': 'Bad Request' });
+        }
+    });
+    
+//////////////////
+///////////REVIEWS
+//////////////////
     app.get('/api/reviews', async(req, res) => {
         try {
             res.status(200).json(await Reviews.find({}));
@@ -388,8 +564,12 @@ app.delete('/api/delete/:id', async(req, res) => {
     }
 });
 
+
+
+
+
 //////////////////////////////////////////////
-/////////////////////LISTEN//////////////////////////////////////////////////
+/////////////////////LISTEN///////////////////
 //////////////////////////////////////////////
 app.listen(PORT, () => {
     console.log(`PORT IS LISTENING ON PORT ${ PORT }`);
