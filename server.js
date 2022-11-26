@@ -117,7 +117,6 @@ const websiteSchema = new mongoose.Schema({
     image: String,
     content: String,
     comment: [commentSchema],
-    reply: [replySchema],
     counter: { type: Number, default: 0 },
 }, { timestamps: true });
 const Website = mongoose.model('Website', websiteSchema);
@@ -128,7 +127,6 @@ const feedSchema = new mongoose.Schema({
     image: String,
     content: String,
     comment: [commentSchema],
-    reply: [replySchema],
     counter: { type: Number, default: 0 },
 }, { timestamps: true });
 const Feed = mongoose.model('Feed', feedSchema);
