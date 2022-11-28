@@ -121,21 +121,15 @@ const websiteSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Website = mongoose.model('Website', websiteSchema);
 
-//FEED/////
-const feedSchema = new mongoose.Schema({
+//POST/////
+const postSchema = new mongoose.Schema({
     title: String,
     image: String,
     content: String,
     comment: [commentSchema],
     counter: { type: Number, default: 0 },
 }, { timestamps: true });
-const Feed = mongoose.model('Feed', feedSchema);
-
-//All////////
-const allSchema = new mongoose.Schema({
-    createPost: { type: String },
-}, { timestamps: true });
-module.exports = mongoose.model('All', allSchema);
+const Post = mongoose.model('Post', postSchema);
 
 
 /////////////MIDDLEWARE//////////////////////////////////////////////
@@ -189,7 +183,7 @@ app.put('/api/people/:id', async(req, res) => {
 });
 
 //DELETE//
-app.delete('/api/delete/:id', async(req, res) => {
+app.delete('/api/people/delete/:id', async(req, res) => {
     try {
         res.status(200).json(await People.findByIdAndDelete(
             req.params.id));
@@ -231,7 +225,6 @@ app.put('/api/workout/:id', async(res, req) => {
             { new: true }
         ))
     } catch (error) {
-        res.status(400)({'error': 'Bad Request'});
     }
 });
 
@@ -312,29 +305,29 @@ app.delete('/api/user/delete/:id', async (req, res) => {
 ///////////// DIGITAL INVESTORS HUB //////////////////////////
 //////////////////////////////////////////////////////////////
 ///////////////////
-///////////////FEED
+///////////////POST
 ///////////////////
-app.get('/api/feed', async(req, res) => {
+app.get('/api/post', async(req, res) => {
     try {
-        res.status(200).json(await Feed.find({}));
+        res.status(200).json(await Post.find({}));
     } catch (error) {
         res.status(400).json({'404 Message': 'Bad Request'});
         
     }
 });
 //CREATE//
-app.post('/api/feed', async(req, res) => {
+app.post('/api/post', async(req, res) => {
     try {
-        res.status(201).json(await Feed.create(req.body));
+        res.status(201).json(await Post.create(req.body));
     } catch (error) {
         res.status(400).json({'404 Message': 'Bad Request'});
     }
 });
 
 //UPDATE//
-app.put('/api/feed/:id', async(req, res) => {
+app.put('/api/post/:id', async(req, res) => {
     try {
-        res.status(200).json(await Feed.findByIdAndUpdate(
+        res.status(200).json(await Post.findByIdAndUpdate(
             req.params.id,
             req.body,
             { new: true }
@@ -345,9 +338,9 @@ app.put('/api/feed/:id', async(req, res) => {
 });
 
 //DELETE//
-app.delete('/api/delete/:id', async(req, res) => {
+app.delete('/api/post/delete/:id', async(req, res) => {
     try {
-        res.status(200).json(await Feed.findByIdAndDelete(
+        res.status(200).json(await Post.findByIdAndDelete(
             req.params.id));
     } catch (error) {
         res.status(400).json({ 'error': 'Bad Request' });
@@ -387,7 +380,7 @@ app.put('/api/websites/:id', async(req, res) => {
     });
     
     //DELETE//
-    app.delete('/api/delete/:id', async(req, res) => {
+    app.delete('/api/websites/delete/:id', async(req, res) => {
         try {
             res.status(200).json(await Feed.findByIdAndDelete(
                 req.params.id));
@@ -428,7 +421,7 @@ app.put('/api/plus/:id', async(req, res) => {
     }
 });
 //DELETE//
-app.delete('/api/delete/:id', async(req, res) => {
+app.delete('/api/plus/delete/:id', async(req, res) => {
     try {
         res.status(200).json(await Plus.findByIdAndDelete(
             req.params.id));
@@ -469,7 +462,7 @@ app.put('/api/blogs/:id', async(req, res) => {
     });
     
     //DELETE//
-    app.delete('/api/delete/:id', async(req, res) => {
+    app.delete('/api/blogs/delete/:id', async(req, res) => {
         try {
             res.status(200).json(await Blog.findByIdAndDelete(
                 req.params.id));
@@ -511,7 +504,7 @@ app.put('/api/essentials/:id', async(req, res) => {
     });
     
     //DELETE//
-    app.delete('/api/delete/:id', async(req, res) => {
+    app.delete('/api/essentials/delete/:id', async(req, res) => {
         try {
             res.status(200).json(await EssentialP.findByIdAndDelete(
                 req.params.id));
@@ -553,7 +546,7 @@ app.put('/api/reviews/:id', async(req, res) => {
 });
 
 //DELETE//
-app.delete('/api/delete/:id', async(req, res) => {
+app.delete('/api/reviews/delete/:id', async(req, res) => {
     try {
         res.status(200).json(await Reviews.findByIdAndDelete(
             req.params.id));
